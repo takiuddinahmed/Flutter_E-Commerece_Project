@@ -1,6 +1,7 @@
 # flutter_ecommerce_project
 
-A new Flutter project.
+A new Flutter Ecommerce project.
+This is written in day39
 
 ## Getting Started
 
