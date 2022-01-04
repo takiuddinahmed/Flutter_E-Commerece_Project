@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ecommerce_project/constant.dart';
 import 'package:flutter_ecommerce_project/screens/signin/signin.dart';
 import 'package:flutter_ecommerce_project/theme.dart';
 
@@ -8,7 +9,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Flutter Ecommerce Project",
+      title: appName,
       debugShowCheckedModeBanner: false,
       home: SignInScreen(),
       theme: theme()
