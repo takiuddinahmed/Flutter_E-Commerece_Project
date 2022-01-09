@@ -3,21 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce_project/components/default_button.dart';
 import 'package:flutter_ecommerce_project/constant.dart';
 import 'package:flutter_ecommerce_project/screen_config.dart';
-import 'package:flutter_ecommerce_project/screens/forget_password/forget_password_screen.dart';
 import 'package:logger/logger.dart';
 
-class SignInForm extends StatefulWidget {
-  const SignInForm({ Key? key }) : super(key: key);
+class SignUpForm extends StatefulWidget {
+  const SignUpForm({ Key? key }) : super(key: key);
 
   @override
-  _SignInFormState createState() => _SignInFormState();
+  _SignUpFormState createState() => _SignUpFormState();
 }
 
-class _SignInFormState extends State<SignInForm> {
-  var formKey = GlobalKey<FormState>();
-
+class _SignUpFormState extends State<SignUpForm> {
   var emailController = TextEditingController();
   var passwordController = TextEditingController();
+  var passwordComfirmController = TextEditingController();
+
+  var formKey = GlobalKey<FormState>();
 
   bool passWordHide = true;
 
@@ -25,37 +25,35 @@ class _SignInFormState extends State<SignInForm> {
   Widget build(BuildContext context) {
     return Form(
       key: formKey,
-      child: Column(
-        children: [
-          EmailFormField(),
-          SizedBox(height: getProportionateScreenHeight(30)),
-          PasswordFormField(),
-          SizedBox(height: getProportionateScreenHeight(30)),
-          forgotPassword(),
-          SizedBox(height: getProportionateScreenHeight(20)),
-          DefaultButton(
-            text: "Sign In",
-            press: (){
-              signIn();
-            }
-          )
-        ],
-      ),
+      child: Column(children: [
+        EmailFormField(),
+        SizedBox(height: getProportionateScreenHeight(30),),
+        PasswordFormField(),
+        SizedBox(height: getProportionateScreenHeight(30),),
+        ConfirmPasswordFormField(),
+        SizedBox(height: getProportionateScreenHeight(30),),
+        DefaultButton(
+          text: "Sign Up",
+          press: (){signUp();}
+        )
+      ],),
     );
   }
+   // myemai@email.com 
 
-   signIn() async {
+
+  signUp() async {
     
     var logger = Logger();
     if(formKey.currentState!.validate()){
       String email = emailController.text.trim();
       String password = passwordController.text.trim();
       try {
-        var credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        var credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: email,
           password: password
         );
-        logger.d("sign in completed");
+        logger.d("sign up completed");
         // StreamBuilder(
 
         // )
@@ -77,6 +75,7 @@ class _SignInFormState extends State<SignInForm> {
 
   }
 
+  
   TextFormField EmailFormField() {
     return TextFormField(
           controller: emailController,
@@ -103,6 +102,7 @@ class _SignInFormState extends State<SignInForm> {
           autovalidateMode: AutovalidateMode.onUserInteraction,
         );
   }
+
   TextFormField PasswordFormField() {
     return TextFormField(
           controller: passwordController,
@@ -135,29 +135,39 @@ class _SignInFormState extends State<SignInForm> {
           autovalidateMode: AutovalidateMode.onUserInteraction,
         );
   }
-}
-
-class forgotPassword extends StatelessWidget {
-  const forgotPassword({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Spacer(),
-        GestureDetector(
-          onTap: (){
-            Navigator.push(context, 
-            MaterialPageRoute(builder: (_){return ForgetPasswordScreen();}));
-          },
-          child: Text(
-            "Forgot Password",
-            style: TextStyle(decoration: TextDecoration.underline,)
+  TextFormField ConfirmPasswordFormField() {
+    return TextFormField(
+          controller: passwordComfirmController,
+          keyboardType: TextInputType.emailAddress,
+          obscureText: passWordHide,
+          decoration: InputDecoration(
+            hintText: "Please comfirm pasword",
+            labelText: "confirm Password",
+            floatingLabelBehavior: FloatingLabelBehavior.always,
+            suffixIcon: Padding(
+              padding: EdgeInsets.fromLTRB(0, 8, 20, 8),
+              child: IconButton(
+                onPressed: (){
+                  setState(() {
+                    passWordHide = !passWordHide;
+                  });
+                }, 
+                icon: Icon(Icons.visibility)),
+            )
           ),
-        )
-      ],
-    );
+          validator: (value){
+            if(passwordController.text.isEmpty){
+              return kPassNullError;
+            }
+            if (value!.length < 6){
+              return kShortPassError;
+            }
+            if (!(passwordComfirmController.text == passwordController.text)){
+              return kMatchPassError;
+            }
+            return null;
+          },
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+        );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecommerce_project/constant.dart';
 import 'package:flutter_ecommerce_project/screen_config.dart';
+import 'package:flutter_ecommerce_project/screens/forget_password/components/forget_password_form.dart';
 import 'package:flutter_ecommerce_project/screens/signin/components/sign_in_form.dart';
 import 'package:flutter_ecommerce_project/screens/signup/signup_screen.dart';
 
@@ -17,12 +18,13 @@ class Body extends StatelessWidget {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Text("Welcome Back",
+                Text("Forgot Password",
                 style: headingStyle,
                 ),
-                Text("Sign in with your email and password"),
-                SizedBox(height: SizeConfig.screenHeight * 0.04,),
-                SignInForm(),
+                Text("Please enter your email and we will send\n you a link to return to your account",
+                textAlign: TextAlign.center),
+                SizedBox(height: SizeConfig.screenHeight * 0.1,),
+                ForgotPasswordForm(),
                 SizedBox(height: SizeConfig.screenHeight * 0.1,),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
