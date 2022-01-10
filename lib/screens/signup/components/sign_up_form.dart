@@ -22,6 +22,15 @@ class _SignUpFormState extends State<SignUpForm> {
   bool passWordHide = true;
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    emailController.dispose();
+    passwordController.dispose();
+    passwordComfirmController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Form(
       key: formKey,
@@ -34,7 +43,7 @@ class _SignUpFormState extends State<SignUpForm> {
         SizedBox(height: getProportionateScreenHeight(30),),
         DefaultButton(
           text: "Sign Up",
-          press: (){signUp();}
+          press: (){signUp(context);}
         )
       ],),
     );
@@ -42,31 +51,54 @@ class _SignUpFormState extends State<SignUpForm> {
    // myemai@email.com 
 
 
-  signUp() async {
+  signUp(BuildContext context) async {
     
     var logger = Logger();
     if(formKey.currentState!.validate()){
       String email = emailController.text.trim();
       String password = passwordController.text.trim();
+      showDialog(
+        context: context, 
+        builder: (context){
+          return AlertDialog(
+            title: Column(
+              children: [
+                Text("Please Wait.."),
+                SizedBox(height: 20,),
+                Center(
+                  child: CircularProgressIndicator(),
+                )
+              ],
+            ),
+          );
+        });
+      String snackbarMsg = "";
       try {
-        var credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        UserCredential credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: email,
           password: password
         );
+        await credential.user!.sendEmailVerification();
         logger.d("sign up completed");
-        // StreamBuilder(
+        snackbarMsg = "New account registered. Please verify your email.";
 
-        // )
-
-        // showDialog(
-        //   context: context, 
-        //   builder:(_){
-        //     return   AlertDialog(
-        //       title: Text("Please wait......"),
-        //   );}
-        // );
-      } on Exception catch (e) {
+        
+      } on FirebaseAuthException catch (e) {
         logger.e(e);
+        switch(e.code){
+          case  'weak-password':
+            snackbarMsg = "Password is weak. Try again with strong password";
+            break;
+          case 'email-already-in-use':
+            snackbarMsg = "Email is already used";
+        }
+      }
+      finally{
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(snackbarMsg))
+          );
       }
     }
     else {
@@ -87,7 +119,6 @@ class _SignUpFormState extends State<SignUpForm> {
             suffixIcon: Padding(
               padding: const EdgeInsets.fromLTRB(0, 8, 20, 8),
               child: Icon(Icons.email),
-            
             )
           ),
           validator: (value){

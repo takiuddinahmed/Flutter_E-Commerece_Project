@@ -13,9 +13,12 @@ class AuthenticationWrapper extends StatelessWidget {
     var logger = Logger();
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
+      builder: (context, AsyncSnapshot<User?> snapshot) {
         if(snapshot.hasData){
-          logger.d(snapshot.data);
+          FirebaseAuth.instance.currentUser!.reload();
+          if(!snapshot.data!.emailVerified){
+            return SignInScreen();
+          }
           return HomeScreen();
         }
         return SignInScreen();

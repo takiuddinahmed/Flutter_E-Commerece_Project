@@ -22,6 +22,14 @@ class _SignInFormState extends State<SignInForm> {
   bool passWordHide = true;
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Form(
       key: formKey,
@@ -36,7 +44,7 @@ class _SignInFormState extends State<SignInForm> {
           DefaultButton(
             text: "Sign In",
             press: (){
-              signIn();
+              signIn(context);
             }
           )
         ],
@@ -44,37 +52,68 @@ class _SignInFormState extends State<SignInForm> {
     );
   }
 
-   signIn() async {
-    
+   signIn(BuildContext context) async {
     var logger = Logger();
     if(formKey.currentState!.validate()){
       String email = emailController.text.trim();
-      String password = passwordController.text.trim();
+      String password = passwordController.text.trim();   
+
+      showDialog(
+        context: context, 
+        builder: (context){
+          return AlertDialog(
+            title: Column(
+              children: [
+                Text("Please Wait.."),
+                SizedBox(height: 20,),
+                Center(
+                  child: CircularProgressIndicator(),
+                )
+              ],
+            ),
+          );
+        });
+      String snackbarMsg = "";
       try {
         var credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: email,
           password: password
         );
-        logger.d("sign in completed");
-        // StreamBuilder(
 
-        // )
-
-        // showDialog(
-        //   context: context, 
-        //   builder:(_){
-        //     return   AlertDialog(
-        //       title: Text("Please wait......"),
-        //   );}
-        // );
-      } on Exception catch (e) {
+        if(!(credential.user!.emailVerified)){
+          snackbarMsg = "Your email is not verified. Please verify your email.";
+          // throw {"code": "not verified", "msg":"he is not verified"};
+          // throw "not verified";
+        }
+        else{
+          snackbarMsg= "Sign In successfull";
+        }
+      } on FirebaseAuthException catch (e) {
+        switch(e.code){
+         case "user-not-found": 
+            snackbarMsg = "User Not found";
+            break;
+          case "wrong-password" :
+            snackbarMsg = "Incorrect password";
+            break;
+          default:
+            snackbarMsg = "You r wrong";
+            break;
+        }
+        // snackbarMsg = e.toString();
         logger.e(e);
+      }
+      finally{
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(snackbarMsg),
+        ));
       }
     }
     else {
       logger.e("Not valid");
     }
-
   }
 
   TextFormField EmailFormField() {
